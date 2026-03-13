@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão - 13º BBM</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .container { max-width: 600px; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1rem;}
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9rem; background: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h2 style="color: #d32f2f; text-align: center;">⚙️ Gestão de Materiais</h2>
+        
+        <div id="tela-login-admin" style="text-align: center; margin-top: 30px;">
+            <p style="color: #555; margin-bottom: 20px;">Acesso restrito ao comando e auxiliares diretos.</p>
+            <input type="password" id="senha-admin" placeholder="Digite a senha numérica" autofocus>
+            <button onclick="verificarSenha()" class="btn-acao" style="background-color: #d32f2f;">🔓 Desbloquear Painel</button>
+            <a href="viaturas.html" class="btn-voltar-login" style="margin-top: 20px;">⬅ Voltar</a>
+        </div>
+
+        <div id="tela-gestao" style="display: none;">
+            <button onclick="trancarPainel()" class="btn-acao" style="background-color: #555; margin-bottom: 25px;">🔒 Trancar Painel e Sair</button>
+
+            <h3 style="border-bottom: 2px solid #eee; padding-bottom: 5px;">Cadastrar Novo Item</h3>
+            <form onsubmit="adicionarMaterial(event)" style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+                <label style="font-size: 12px; font-weight: bold; color: #555;">ID (Gerado Automático):</label>
+                <input type="text" id="novo-id" readonly style="background:#e0e0e0; font-weight:bold; color: #333;">
+                
+                <input type="text" id="novo-nome" placeholder="Nome do Material" required>
+                <select id="nova-vtr" required><option value="">Carregando...</option></select>
+                <select id="nova-cat" required><option value="">Carregando...</option></select>
+                <input type="number" id="nova-qtd" placeholder="Quantidade" required min="1">
+                
+                <button type="submit" id="btn-add" class="btn-acao" style="background-color: #2e7d32;">+ Salvar no Catálogo Oficial</button>
+            </form>
+
+            <h3 style="margin-top: 30px;">Lista do Catálogo</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead><tr><th>ID</th><th>Material</th><th>Local</th><th>Ação</th></tr></thead>
+                    <tbody id="tabela-materiais"><tr><td colspan="4" style="text-align:center;">A carregar...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Trava de segurança inicial
+        if(!localStorage.getItem('conf_usuarioNome')) window.location.href = 'index.html';
+
+        function verificarSenha() {
+            if(document.getElementById('senha-admin').value === "1234") {
+                document.getElementById('tela-login-admin').style.display = 'none';
+                document.getElementById('tela-gestao').style.display = 'block';
+                carregarDados();
+            } else { alert("Senha Incorreta!"); }
+        }
+
+        function trancarPainel() { location.reload(); }
+
+        async function carregarDados() {
+            try {
+                const res = await fetch('/api/admin');
+                const dados = await res.json();
+                
+                if(dados.sucesso) {
+                    document.getElementById('novo-id').value = dados.prox_id;
+                    
+                    document.getElementById('nova-vtr').innerHTML = `<option value="">-- Viatura Padrão --</option>` + dados.viaturas.map(v => `<option value="${v}">${v}</option>`).join('');
+                    document.getElementById('nova-cat').innerHTML = `<option value="">-- Categoria Padrão --</option>` + dados.categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+                    
+                    const tbody = document.getElementById('tabela-materiais');
+                    tbody.innerHTML = '';
+                    dados.materiais.forEach(mat => {
+                        tbody.innerHTML += `<tr>
+                            <td style="font-weight: bold; color: #666;">${mat.id_material}</td>
+                            <td>${mat.nome_material}</td>
+                            <td>${mat.viatura_padrao}</td>
+                            <td style="text-align: center;"><button onclick="removerMaterial('${mat.id_material}')" style="background:none; border:none; color:red; font-size:1.2rem; cursor:pointer;" title="Excluir">❌</button></td>
+                        </tr>`;
+                    });
+                }
+            } catch(e) { alert("Erro ao carregar banco de dados."); }
+        }
+
+        async function adicionarMaterial(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-add');
+            btn.disabled = true; btn.innerText = "A salvar...";
+            
+            const payload = {
+                acao: 'adicionar',
+                id: document.getElementById('novo-id').value,
+                nome: document.getElementById('novo-nome').value,
+                viatura: document.getElementById('nova-vtr').value,
+                categoria: document.getElementById('nova-cat').value,
+                qtde: document.getElementById('nova-qtd').value
+            };
+
+            await fetch('/api/admin', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            alert("✅ Material inserido no catálogo!");
+            carregarDados(); // Recarrega para gerar novo ID
+            document.getElementById('novo-nome').value = '';
+            document.getElementById('nova-qtd').value = '';
+            btn.disabled = false; btn.innerText = "+ Salvar no Catálogo Oficial";
+        }
+
+        async function removerMaterial(idMaterial) {
+            if(confirm('Tem a certeza absoluta que deseja excluir este material do Quartel?')) {
+                await fetch('/api/admin', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({acao: 'remover', id: idMaterial}) });
+                alert("❌ Material removido.");
+                carregarDados();
+            }
+        }
+    </script>
+</body>
+</html>
