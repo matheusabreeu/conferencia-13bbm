@@ -182,9 +182,68 @@
         function sair() { localStorage.clear(); window.location.href = 'index.html'; }
 
         // ESSA FUNÇÃO AINDA VAI SER CRIADA NO PRÓXIMO PASSO
-        function salvarConferencia(e) {
+       async function salvarConferencia(e) {
             e.preventDefault();
-            alert("A tela foi criada com sucesso! O próximo passo é criarmos o sistema de salvar (api/salvar.py).");
+            const btnSalvar = document.getElementById('btn-salvar');
+            btnSalvar.innerText = "⏳ Gravando dados no sistema (Não feche a tela)...";
+            btnSalvar.disabled = true;
+
+            const form = document.getElementById('form-conferencia');
+            const inputs = form.querySelectorAll('input, select');
+            
+            // Vamos agrupar todos os campos soltos por ID do material
+            const materiaisAgrupados = {};
+            const matricula = localStorage.getItem('conf_usuarioMat');
+
+            inputs.forEach(input => {
+                if(input.name) {
+                    const partes = input.name.split('_');
+                    const campo = partes[0]; // status, qtde, obs, nova_vtr, novo_comp, comp
+                    
+                    // Lida com o "_", ex: status_M001
+                    const id = partes.slice(1).join('_'); 
+
+                    if(id) {
+                        if(!materiaisAgrupados[id]) materiaisAgrupados[id] = { id_material: id };
+                        
+                        if(input.name.startsWith('nova_vtr_')) materiaisAgrupados[id].nova_vtr = input.value;
+                        else if(input.name.startsWith('novo_comp_')) materiaisAgrupados[id].novo_comp = input.value;
+                        else materiaisAgrupados[id][campo] = input.value;
+                    }
+                }
+            });
+
+            // Converte o agrupamento para uma lista pronta para o servidor
+            const listaMateriais = Object.values(materiaisAgrupados);
+
+            const payload = {
+                id_viatura: idViatura,
+                matricula: matricula,
+                materiais: listaMateriais
+            };
+
+            try {
+                // Chama a API que acabamos de criar
+                const res = await fetch('/api/salvar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+
+                if(json.sucesso) {
+                    alert("✅ Prontidão Finalizada! Checklist salvo com sucesso na Viatura.");
+                    window.location.href = 'viaturas.html'; // Devolve o militar para o menu
+                } else {
+                    alert("❌ Erro ao salvar: " + json.mensagem);
+                    btnSalvar.innerText = "💾 Gravar Checklist e Voltar";
+                    btnSalvar.disabled = false;
+                }
+            } catch(e) {
+                alert("❌ Erro de conexão com o servidor. Verifique a internet.");
+                btnSalvar.innerText = "💾 Gravar Checklist e Voltar";
+                btnSalvar.disabled = false;
+            }
         }
     </script>
 </body>
