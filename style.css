@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background-color: #f4f4f9; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* Barra do Usuário - Agora alinhada à esquerda */
+.barra-usuario { background: #111; color: white; padding: 8px 15px; text-align: left; font-size: 0.85rem; display: none; }
+.barra-usuario span { font-weight: bold; color: #ffcdd2; }
+.barra-usuario button { background: none; border: none; color: white; text-decoration: underline; cursor: pointer; margin-left: 15px; font-size: 0.85rem;}
+
+.cabecalho { background: linear-gradient(135deg, #b71c1c 0%, #8e0000 100%); color: white; text-align: center; padding: 2rem 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; }
+.logo-batalhao { width: 90px; height: auto; margin-bottom: 12px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3)); }
+.titulos-cabecalho h1 { font-size: 1.6rem; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 1px; }
+.titulos-cabecalho h2 { font-size: 1.1rem; font-weight: 400; color: #ffcdd2; margin-bottom: 0.8rem; }
+.titulos-cabecalho p { font-size: 0.9rem; background-color: rgba(255,255,255,0.1); display: inline-block; padding: 4px 12px; border-radius: 20px; }
+
+.container { flex: 1; padding: 2rem 1rem; max-width: 900px; margin: 0 auto; width: 100%; }
+.menu-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+@media (min-width: 600px) { .menu-grid { grid-template-columns: 1fr 1fr; } }
+
+.btn-menu { background-color: white; color: #b71c1c; text-decoration: none; padding: 1.5rem; border-radius: 8px; font-weight: bold; font-size: 1.1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 2px solid transparent; transition: all 0.3s ease; width: 100%; cursor: pointer;}
+.btn-menu .icone { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.btn-menu:hover { border-color: #b71c1c; transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+
+.cartao-login, .formulario-doc { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+.cartao-login { max-width: 400px; margin: 0 auto; text-align: center; }
+.linha-form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+@media (max-width: 600px) { .linha-form { grid-template-columns: 1fr; } }
+.grupo-input { display: flex; flex-direction: column; text-align: left; margin-bottom: 1rem;}
+.grupo-input label { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; color: #444;}
+.grupo-input input, .grupo-input select, .grupo-input textarea { padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; font-family: 'Inter', sans-serif; }
+.grupo-input textarea { resize: vertical; min-height: 100px; }
+
+/* Nova caixa de edição do texto gerado */
+.caixa-edicao { width: 100%; min-height: 250px; padding: 15px; font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.5; border: 2px solid #ccc; border-radius: 4px; margin: 10px 0; resize: vertical; background-color: #fdfdfd; }
+.caixa-edicao:focus { border-color: #b71c1c; outline: none; }
+
+.btn-acao { width: 100%; background-color: #b71c1c; color: white; padding: 1rem; border: none; border-radius: 4px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background-color 0.3s; margin-top: 1rem;}
+.btn-acao:hover { background-color: #8e0000; }
+.btn-acao:disabled { background-color: #ccc; cursor: wait; }
+.btn-secundario { background: #333; color: white; padding: 0.8rem 1.5rem; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+.btn-secundario:hover { background: #555; }
+.btn-voltar-login { background: none; border: none; color: #555; cursor: pointer; font-weight: bold; text-decoration: underline; margin-bottom: 15px; display: inline-block; font-size: 1rem;}
+
+.rodape { background-color: #1a1a1a; color: #888; text-align: center; padding: 1.5rem; font-size: 0.85rem; margin-top: auto; }
+.rodape span { color: #d32f2f; font-weight: bold; }
+
+/* --- CORREÇÃO DEFINITIVA DA IMPRESSÃO (Sem página em branco) --- */
+#area-impressao { display: none; }
+@media print {
+    @page { size: A4; margin: 2.5cm 2cm 2.5cm 2.5cm; }
+    body { background: white; margin: 0; padding: 0; }
+    
+    /* Faz o site inteiro desaparecer para a impressora, deixando só o #area-impressao */
+    .barra-usuario, .cabecalho, .container, .rodape { display: none !important; }
+    
+    #area-impressao {
+        display: block !important;
+        position: relative;
+        width: 100%;
+        font-family: Arial, Helvetica, sans-serif !important;
+        font-size: 12pt; line-height: 1.5; color: black;
+    }
+    
+    .cabecalho-print { text-align: center; font-weight: normal; margin-bottom: 2rem; }
+    .cabecalho-print b { font-weight: bold; }
+    /* Estilo para a imagem do brasão na impressão */
+    .cabecalho-print img { width: 80px; height: auto; margin-bottom: 10px; }
+    
+    .assinatura-print { text-align: center; margin-top: 1rem; }
+}
