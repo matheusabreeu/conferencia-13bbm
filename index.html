@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conferência - 13º BBM</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
+        h1 { color: #d32f2f; font-size: 24px; margin-bottom: 5px; }
+        p { color: #666; font-size: 14px; margin-top: 0; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 16px; text-align: center; }
+        button { background-color: #d32f2f; color: white; border: none; padding: 15px; border-radius: 5px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;}
+        button:hover { background-color: #b71c1c; }
+        button:disabled { background-color: #ccc; cursor: wait; }
+        #msg-erro { color: #d32f2f; font-weight: bold; font-size: 14px; margin-top: 10px; min-height: 20px; }
+        .rodape { margin-top: 30px; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚒 13º BBM</h1>
+        <p>Sistema de Conferência de Materiais</p>
+        
+        <input type="text" id="matricula" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="Sua Matrícula (Ex: 123456)" autocomplete="off">
+        <div id="msg-erro"></div>
+        <button id="btn-login" onclick="fazerLogin()">Entrar no Sistema</button>
+    </div>
+    <div class="rodape">Desenvolvido pelo 3º SGT BM F Abreu</div>
+
+    <script>
+        // O Enter funciona
+        document.getElementById('matricula').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') fazerLogin();
+        });
+
+        async function fazerLogin() {
+            const mat = document.getElementById('matricula').value.trim();
+            const btn = document.getElementById('btn-login');
+            const erro = document.getElementById('msg-erro');
+
+            if (!mat) { erro.innerText = "Digite a matrícula."; return; }
+            
+            erro.innerText = "Conectando ao banco de dados..."; 
+            erro.style.color = "#555";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ matricula: mat })
+                });
+                const dados = await res.json();
+
+                if (dados.sucesso) {
+                    // Salva tudo e vai para a página de menu das viaturas (que vamos criar)
+                    localStorage.setItem('conf_usuarioNome', dados.nome_guerra);
+                    localStorage.setItem('conf_usuarioMat', dados.matricula);
+                    localStorage.setItem('conf_usuarioNivel', dados.nivel_acesso);
+                    localStorage.setItem('conf_listaMilitares', JSON.stringify(dados.militares));
+                    
+                    window.location.href = 'viaturas.html';
+                } else { 
+                    erro.innerText = dados.mensagem; 
+                    erro.style.color = "#d32f2f";
+                }
+            } catch (e) { 
+                erro.innerText = "Erro ao conectar com o servidor."; 
+                erro.style.color = "#d32f2f";
+            }
+            btn.disabled = false;
+        }
+    </script>
+</body>
+</html>
