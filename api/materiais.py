@@ -10,8 +10,11 @@ def ler_aba_segura(planilha, nome_aba):
     try:
         aba = planilha.worksheet(nome_aba)
         valores = aba.get_all_values()
-        if not valores:
-            return [] # Se o robô vir a aba vazia, não trava, apenas devolve vazio
+        
+        # A MÁGICA AQUI: Se estiver vazio OU tiver só a linha 1 de títulos (len <= 1), ignora!
+        if not valores or len(valores) <= 1:
+            return []
+            
         return aba.get_all_records()
     except Exception as e:
         raise Exception(f"Falha ao ler a aba '{nome_aba}': {str(e)}")
