@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisar - 13º BBM</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .container { max-width: 500px; }
+        .card { background: #e3f2fd; border: 1px solid #bbdefb; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .card-title { font-weight: bold; color: #1976d2; font-size: 1.1rem; margin-bottom: 8px; }
+        .info-linha { margin-bottom: 4px; font-size: 0.9rem; color: #444; }
+        .info-linha strong { color: #222; }
+        .input-busca { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; margin-bottom: 10px; box-sizing: border-box; }
+        .btn-buscar { background-color: #1976d2; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
+        .btn-buscar:hover { background-color: #1565c0; }
+    </style>
+</head>
+<body>
+    <div class="barra-usuario" id="barra-usuario" style="display: block;">
+        Identificação: <span id="user-logado-nome"></span> (Mat: <span id="user-logado-mat"></span>) 
+        <button onclick="sair()">[Sair]</button>
+    </div>
+
+    <main class="container">
+        <h2 style="color: #1976d2; text-align: center; margin-bottom: 15px;">📦 Localizador de Materiais</h2>
+        
+        <form onsubmit="buscarMaterial(event)">
+            <input type="text" id="termo-busca" class="input-busca" placeholder="Digite o nome ou ID do material..." required autofocus>
+            <button type="submit" id="btn-buscar" class="btn-buscar">🔍 Pesquisar</button>
+        </form>
+
+        <div id="area-resultados" style="margin-top: 25px;"></div>
+
+        <a href="viaturas.html" class="btn-voltar-login" style="display: block; text-align: center; margin-top: 25px;">⬅ Voltar às Viaturas</a>
+    </main>
+
+    <script>
+        // Trava de segurança
+        if(!localStorage.getItem('conf_usuarioNome')) window.location.href = 'index.html';
+
+        window.onload = function() {
+            document.getElementById('user-logado-nome').innerText = localStorage.getItem('conf_usuarioNome');
+            document.getElementById('user-logado-mat').innerText = localStorage.getItem('conf_usuarioMat');
+        }
+
+        function sair() { localStorage.clear(); window.location.href = 'index.html'; }
+
+        async function buscarMaterial(e) {
+            e.preventDefault();
+            const termo = document.getElementById('termo-busca').value;
+            const btn = document.getElementById('btn-buscar');
+            const area = document.getElementById('area-resultados');
+
+            btn.innerText = "A pesquisar...";
+            btn.disabled = true;
+            area.innerHTML = "";
+
+            try {
+                const res = await fetch('/api/buscar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ termo: termo })
+                });
+                const dados = await res.json();
+
+                if(dados.sucesso) {
+                    if(dados.resultados.length === 0) {
+                        area.innerHTML = `<p style="color: #d32f2f; text-align: center; font-weight: bold;">Nenhum material encontrado com "${termo}".</p>`;
+                    } else {
+                        area.innerHTML = `<h3 style="font-size: 1rem; color: #555; margin-bottom: 15px;">Resultados para "${termo}":</h3>`;
+                        dados.resultados.forEach(r => {
+                            area.innerHTML += `
+                                <div class="card">
+                                    <div class="card-title">${r.nome_material} (${r.id_material})</div>
+                                    <div class="info-linha">📍 <strong>Padrão:</strong> ${r.viatura_padrao} (${r.categoria_padrao})</div>
+                                    <div class="info-linha">👁️ <strong>Último local:</strong> ${r.local_visto}</div>
+                                    <div class="info-linha">📊 <strong>Status:</strong> ${r.status_atual}</div>
+                                    <div class="info-linha">📝 <strong>Obs:</strong> ${r.obs || '-'}</div>
+                                    <div class="info-linha">👨‍🚒 <strong>Visto por:</strong> ${r.quem_viu} em ${r.data_visto}</div>
+                                </div>
+                            `;
+                        });
+                    }
+                } else {
+                    area.innerHTML = `<p style="color: #d32f2f; text-align: center;">Erro: ${dados.mensagem}</p>`;
+                }
+            } catch(err) {
+                area.innerHTML = `<p style="color: #d32f2f; text-align: center;">Erro de conexão com o servidor.</p>`;
+            }
+
+            btn.innerText = "🔍 Pesquisar";
+            btn.disabled = false;
+        }
+    </script>
+</body>
+</html>
