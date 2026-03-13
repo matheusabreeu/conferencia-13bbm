@@ -6,6 +6,17 @@ import os
 from datetime import datetime, timezone, timedelta
 import urllib.parse
 
+# NOVA FUNÇÃO DE BLINDAGEM E RAIO-X
+def ler_aba_segura(planilha, nome_aba):
+    try:
+        aba = planilha.worksheet(nome_aba)
+        valores = aba.get_all_values()
+        if not valores:
+            return []
+        return aba.get_all_records()
+    except Exception as e:
+        raise Exception(f"Falha ao ler a aba '{nome_aba}': {str(e)}")
+
 class handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(200, "ok")
@@ -29,32 +40,30 @@ class handler(BaseHTTPRequestHandler):
             cliente = gspread.authorize(creds)
             planilha = cliente.open_by_key('1vk2ZFjIYTGt8wPfXz3GBq6UzW_OkqEWrgwd8Sxn4r10')
 
-            registros = planilha.worksheet('Registro_Diario').get_all_records()
-            catalogo = planilha.worksheet('Catalogo_Materiais').get_all_records()
-            militares = planilha.worksheet('Militares').get_all_records()
+            registros = ler_aba_segura(planilha, 'Registro_Diario')
+            catalogo = ler_aba_segura(planilha, 'Catalogo_Materiais')
+            militares = ler_aba_segura(planilha, 'Militares')
 
             t_socorro = ""
             try:
-                config_dados = planilha.worksheet('Configuracoes').get_all_records()
-                confs = {str(c.get('cargo')).strip(): str(c.get('telefone_whatsapp')).strip() for c in config_dados}
+                config_dados = ler_aba_segura(planilha, 'Configuracoes')
+                confs = {str(c.get('cargo')).strip(): str(c.get('telefone_whatsapp')).strip() for c in config_dados if 'cargo' in c}
                 t_socorro = confs.get('chefe_socorro', '').replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
             except: pass
 
             lista_contatos = [{'nome': m.get('nome_formatado', ''), 'tel': str(m.get('telefone', '')).replace(' ', '').replace('-', '').replace('(', '').replace(')', '')} for m in militares if m.get('telefone')]
-            dict_nomes_materiais = {str(m['id_material']).strip(): str(m['nome_material']).strip() for m in catalogo}
+            dict_nomes_materiais = {str(m.get('id_material', '')).strip(): str(m.get('nome_material', '')).strip() for m in catalogo}
             
             fuso_br = timezone(timedelta(hours=-3))
             agora = datetime.now(fuso_br)
             hoje_str = agora.strftime('%d/%m/%Y')
             dias = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
 
-            # Filtra SÓ os registos de hoje
             registros_hoje = [r for r in registros if hoje_str in str(r.get('data_hora', ''))]
             
-            # Pega o último registo de hoje para cada material
             ultimos_hoje = {}
             for r in registros_hoje:
-                ultimos_hoje[str(r['id_material']).strip()] = r
+                ultimos_hoje[str(r.get('id_material', '')).strip()] = r
 
             vtrs_conferidas = set(str(r.get('id_viatura')) for r in registros_hoje)
             locais_obrigatorios = ['ABT-34', 'AR-75', 'Permanência']
@@ -66,6 +75,7 @@ class handler(BaseHTTPRequestHandler):
             alteracoes = []
 
             for m_id, r in ultimos_hoje.items():
+                if not m_id: continue
                 nome_real = dict_nomes_materiais.get(m_id, m_id)
                 local_vtr = str(r.get('id_viatura', 'LOCAL NAO INFORMADO')).strip()
                 local_comp = str(r.get('compartimento_encontrado', '')).strip()
