@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seleção de Viatura</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .container { max-width: 500px; }
+        .viatura-btn { background-color: #1976d2; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.3s;}
+        .viatura-btn:hover { background-color: #1565c0; transform: translateY(-2px); }
+        .tipo { font-size: 0.8rem; font-weight: normal; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 12px; }
+    </style>
+</head>
+<body>
+    <div class="barra-usuario" id="barra-usuario" style="display: block;">
+        Identificação: <span id="user-logado-nome"></span> (Mat: <span id="user-logado-mat"></span>) 
+        <button onclick="sair()">[Sair]</button>
+    </div>
+
+    <header class="cabecalho">
+        <div class="titulos-cabecalho">
+            <h1>Conferência de Materiais</h1>
+            <h2>13º BBM - Paço do Lumiar</h2>
+        </div>
+    </header>
+
+    <main class="container">
+        <h2 style="color: #d32f2f; text-align: center; margin-bottom: 10px;">Local de Conferência</h2>
+        <p style="text-align: center; color: #555; margin-bottom: 20px;">Selecione a viatura ou permanência para iniciar o checklist.</p>
+
+        <div id="lista-viaturas" style="text-align: center;">
+            <p style="color: #666; font-weight: bold;">Carregando viaturas do sistema...</p>
+        </div>
+        
+        <div style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
+            <a href="relatorio.html" class="btn-acao" style="background-color: #2e7d32; display: flex; align-items: center; justify-content: center; text-decoration: none;">📄 Emitir Relatório Diário Agora</a>
+            <a href="buscar.html" class="btn-acao" style="background-color: #1976d2; display: flex; align-items: center; justify-content: center; text-decoration: none; margin-top: 10px;">📦 Buscar Equipamento</a>
+            
+            <a href="https://app-13bbm.vercel.app/" class="btn-voltar-login" style="display: block; text-align: center; margin-top: 20px;">⬅ Voltar ao Painel Principal</a>
+        </div>
+    </main>
+
+    <script>
+        // Trava de segurança da Conferência
+        if(!localStorage.getItem('conf_usuarioNome')) window.location.href = 'index.html';
+
+        window.onload = function() {
+            document.getElementById('user-logado-nome').innerText = localStorage.getItem('conf_usuarioNome');
+            document.getElementById('user-logado-mat').innerText = localStorage.getItem('conf_usuarioMat');
+            carregarViaturas();
+        }
+
+        function sair() { localStorage.clear(); window.location.href = 'index.html'; }
+
+        async function carregarViaturas() {
+            const divLista = document.getElementById('lista-viaturas');
+            
+            try {
+                // Chama o arquivo Python que acabamos de criar
+                const res = await fetch('/api/viaturas');
+                const dados = await res.json();
+
+                if (dados.sucesso) {
+                    divLista.innerHTML = ''; // Limpa a mensagem de "Carregando..."
+                    
+                    dados.viaturas.forEach(v => {
+                        const btn = document.createElement('a');
+                        // Vai enviar o ID da viatura pela URL para a próxima página
+                        btn.href = `conferencia.html?vtr=${v.id_viatura}`;
+                        btn.className = 'viatura-btn';
+                        btn.innerHTML = `<span>🚒 ${v.nome_viatura}</span> <span class="tipo">Fazer Checklist ➡</span>`;
+                        divLista.appendChild(btn);
+                    });
+                } else {
+                    divLista.innerHTML = `<p style="color: red;">Erro: ${dados.mensagem}</p>`;
+                }
+            } catch (e) {
+                divLista.innerHTML = `<p style="color: red;">Erro ao carregar viaturas do servidor.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
