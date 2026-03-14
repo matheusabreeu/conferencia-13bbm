@@ -8,59 +8,39 @@
     <link rel="stylesheet" href="style.css">
     <style>
         .container { max-width: 500px; }
-        .btn-whats { display: block; width: 100%; padding: 15px; margin-bottom: 12px; border-radius: 8px; font-weight: bold; text-align: center; color: white; border: none; font-size: 1rem; text-decoration: none; box-sizing: border-box; transition: 0.3s;}
+        .btn-whats { display: block; width: 100%; padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; color: white; border: none; font-size: 1.1rem; cursor: pointer; transition: 0.3s;}
         .btn-socorro { background-color: #25D366; } .btn-socorro:hover { background-color: #1DA851; }
-        .btn-militar { background-color: #128C7E; margin-top: 10px; } .btn-militar:hover { background-color: #0d6e62; }
         .caixa-relatorio { background: #f8f9fa; padding: 15px; border-radius: 8px; font-size: 0.85rem; white-space: pre-wrap; border: 1px solid #ddd; font-family: monospace; color: #333; margin-bottom: 20px;}
-        .aviso-pendencia { background-color: #ffebee; color: #d32f2f; border: 2px solid #ef5350; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; text-align: center;}
     </style>
 </head>
 <body>
-    <div class="barra-usuario" id="barra-usuario" style="display: block;">
-        Identificação: <span id="user-logado-nome"></span> (Mat: <span id="user-logado-mat"></span>) 
-        <button onclick="sair()">[Sair]</button>
-    </div>
-
     <main class="container">
         <h2 style="color: #d32f2f; text-align: center; margin-bottom: 20px;">Relatório Finalizado</h2>
         
         <div id="loading" style="text-align: center; font-weight: bold; color: #666;">⏳ A gerar relatório...</div>
         
         <div id="area-relatorio" style="display: none;">
-            <div id="aviso-box" class="aviso-pendencia" style="display: none;"></div>
-            
             <div class="caixa-relatorio" id="texto-visivel"></div>
 
-            <a href="#" id="link-socorro" target="_blank" class="btn-whats btn-socorro">📲 Enviar ao Chefe de Socorro</a>
-
-            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #bbdefb;">
-                <label style="font-size: 0.9rem; font-weight: bold; color: #1976d2;">Ou enviar para outro militar:</label>
-                <select id="zap_militar" style="width: 100%; padding: 12px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc;">
-                    <option value="">-- Selecione o militar --</option>
-                </select>
-                <button onclick="enviarZapMilitar()" class="btn-whats btn-militar">↗️ Enviar Relatório</button>
-            </div>
+            <button onclick="copiarRelatorio()" class="btn-whats btn-socorro">📋 Copiar Relatório para o WhatsApp</button>
+            <p style="text-align: center; font-size: 0.8rem; color: #666; margin-top: 10px;">Clique acima, abra o WhatsApp e cole (Ctrl+V) na conversa desejada.</p>
         </div>
 
         <a href="viaturas.html" class="btn-voltar-login" style="display: block; text-align: center; margin-top: 25px;">⬅ Voltar às Viaturas</a>
     </main>
 
     <script>
-        if(!localStorage.getItem('conf_usuarioNome')) window.location.href = 'index.html';
-        document.getElementById('user-logado-nome').innerText = localStorage.getItem('conf_usuarioNome');
-        document.getElementById('user-logado-mat').innerText = localStorage.getItem('conf_usuarioMat');
-
-        let msgCodificada = "";
+        let textoOriginal = "";
 
         window.onload = async function() {
-            // Puxa a guarnição gerada no site principal (que partilha o mesmo aparelho!)
             const guarnicaoLocal = JSON.parse(localStorage.getItem('guarnicaoServico') || '[]');
+            const viaturasLocal = JSON.parse(localStorage.getItem('statusViaturas') || '{}');
 
             try {
                 const res = await fetch('/api/relatorio', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ guarnicao: guarnicaoLocal })
+                    body: JSON.stringify({ guarnicao: guarnicaoLocal, viaturas_status: viaturasLocal })
                 });
                 const dados = await res.json();
 
@@ -68,36 +48,19 @@
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('area-relatorio').style.display = 'block';
                     
-                    document.getElementById('texto-visivel').innerText = dados.texto;
-                    msgCodificada = dados.texto_codificado;
-
-                    if(dados.aviso) {
-                        const avisoBox = document.getElementById('aviso-box');
-                        avisoBox.style.display = 'block';
-                        avisoBox.innerText = "❌ " + dados.aviso;
-                    }
-
-                    if(dados.t_socorro) {
-                        document.getElementById('link-socorro').href = "https://wa.me/55" + dados.t_socorro + "?text=" + msgCodificada;
-                    } else {
-                        document.getElementById('link-socorro').style.display = 'none'; // Esconde se não houver telefone configurado
-                    }
-
-                    const select = document.getElementById('zap_militar');
-                    dados.contatos.forEach(c => {
-                        select.innerHTML += `<option value="${c.tel}">${c.nome}</option>`;
-                    });
+                    textoOriginal = dados.texto;
+                    document.getElementById('texto-visivel').innerText = textoOriginal;
                 } else { document.getElementById('loading').innerHTML = `<span style="color:red;">Erro: ${dados.mensagem}</span>`; }
-            } catch(e) { document.getElementById('loading').innerHTML = `<span style="color:red;">Erro de ligação.</span>`; }
+            } catch(e) { document.getElementById('loading').innerHTML = `<span style="color:red;">Erro de ligação ao servidor.</span>`; }
         }
 
-        function enviarZapMilitar() {
-            const tel = document.getElementById('zap_militar').value;
-            if(tel) { window.open("https://wa.me/55" + tel + "?text=" + msgCodificada, "_blank"); } 
-            else { alert("Bombeiro, selecione o nome na lista!"); }
+        function copiarRelatorio() {
+            navigator.clipboard.writeText(textoOriginal).then(() => {
+                alert("✅ Relatório COPIADO com sucesso!\n\nAgora basta abrir o seu WhatsApp e colar o texto na conversa do Chefe de Socorro.");
+            }).catch(err => {
+                alert("❌ Ocorreu um erro ao copiar. Por favor, selecione o texto acima e copie manualmente.");
+            });
         }
-
-        function sair() { localStorage.clear(); window.location.href = 'index.html'; }
     </script>
 </body>
 </html>
