@@ -195,20 +195,25 @@
             const materiaisAgrupados = {};
             const matricula = localStorage.getItem('conf_usuarioMat');
 
-            inputs.forEach(input => {
-                if(input.name) {
+           inputs.forEach(input => {
+                if(!input.name) return;
+                
+                let id;
+                if(input.name.startsWith('nova_vtr_')) {
+                    id = input.name.substring(9);
+                    materiaisAgrupados[id] = materiaisAgrupados[id] || {id_material: id};
+                    materiaisAgrupados[id].nova_vtr = input.value;
+                } else if(input.name.startsWith('novo_comp_')) {
+                    id = input.name.substring(10);
+                    materiaisAgrupados[id] = materiaisAgrupados[id] || {id_material: id};
+                    materiaisAgrupados[id].novo_comp = input.value;
+                } else {
                     const partes = input.name.split('_');
-                    const campo = partes[0]; // status, qtde, obs, nova_vtr, novo_comp, comp
-                    
-                    // Lida com o "_", ex: status_M001
-                    const id = partes.slice(1).join('_'); 
-
+                    const campo = partes[0]; // status, qtde, obs, comp
+                    id = partes.slice(1).join('_');
                     if(id) {
-                        if(!materiaisAgrupados[id]) materiaisAgrupados[id] = { id_material: id };
-                        
-                        if(input.name.startsWith('nova_vtr_')) materiaisAgrupados[id].nova_vtr = input.value;
-                        else if(input.name.startsWith('novo_comp_')) materiaisAgrupados[id].novo_comp = input.value;
-                        else materiaisAgrupados[id][campo] = input.value;
+                        materiaisAgrupados[id] = materiaisAgrupados[id] || {id_material: id};
+                        materiaisAgrupados[id][campo] = input.value;
                     }
                 }
             });
