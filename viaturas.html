@@ -3,90 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seleção de Viatura</title>
+    <title>Menu Principal - 13º BBM</title>
     <link rel="icon" href="logo.png" type="image/png">
     <link rel="stylesheet" href="style.css">
     <style>
         .container { max-width: 500px; }
-        .viatura-btn { background-color: #1976d2; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.3s;}
-        .viatura-btn:hover { background-color: #1565c0; transform: translateY(-2px); }
-        .tipo { font-size: 0.8rem; font-weight: normal; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 12px; }
+        .viatura-btn { background-color: #1976d2; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tipo { font-size: 0.8rem; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 12px; }
+        .hist-box { background: white; padding: 15px; border-radius: 8px; margin-top: 25px; border: 1px solid #ddd; }
+        .hist-item { font-size: 0.85rem; padding: 8px; background: #f1f8e9; border-left: 4px solid #7cb342; margin-bottom: 8px; color: #333;}
     </style>
 </head>
 <body>
     <div class="barra-usuario" id="barra-usuario" style="display: block;">
-        Identificação: <span id="user-logado-nome"></span> (Mat: <span id="user-logado-mat"></span>) 
-        <button onclick="sair()">[Sair]</button>
+        Identificação: <span id="user-logado-nome"></span> <button onclick="sair()">[Sair]</button>
     </div>
 
-    <header class="cabecalho">
-        <div class="titulos-cabecalho">
-            <h1>Conferência de Materiais</h1>
-            <h2>13º BBM - Paço do Lumiar</h2>
-        </div>
-    </header>
-
     <main class="container">
-        <h2 style="color: #d32f2f; text-align: center; margin-bottom: 10px;">Local de Conferência</h2>
-        <p style="text-align: center; color: #555; margin-bottom: 20px;">Selecione a viatura ou permanência para iniciar o checklist.</p>
+        <h2 style="color: #d32f2f; text-align: center; margin-bottom: 20px;">Painel de Conferência</h2>
 
-        <div id="lista-viaturas" style="text-align: center;">
-            <p style="color: #666; font-weight: bold;">Carregando viaturas do sistema...</p>
-        </div>
+        <div id="lista-viaturas" style="text-align: center;">⏳ Carregando locais...</div>
         
-        <div style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
-            <a href="relatorio.html" class="btn-acao" style="background-color: #2e7d32; display: flex; align-items: center; justify-content: center; text-decoration: none;">📄 Emitir Relatório Diário Agora</a>
-            <a href="buscar.html" class="btn-acao" style="background-color: #1976d2; display: flex; align-items: center; justify-content: center; text-decoration: none; margin-top: 10px;">📦 Buscar Equipamento</a>
-            
-            <a href="https://app-13bbm.vercel.app/" class="btn-voltar-login" style="display: block; text-align: center; margin-top: 20px;">⬅ Voltar ao Painel Principal</a>
+        <div style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 20px;">
+            <a href="guarnicao.html" class="btn-acao" style="background-color: #b71c1c; display: flex; align-items: center; justify-content: center; text-decoration: none; margin-bottom: 10px;">👨‍🚒 1. Informar Guarnição e Viaturas</a>
+            <a href="relatorio.html" class="btn-acao" style="background-color: #2e7d32; display: flex; align-items: center; justify-content: center; text-decoration: none; margin-bottom: 10px;">📄 2. Emitir Relatório Diário Oficial</a>
+            <a href="buscar.html" class="btn-acao" style="background-color: #1976d2; display: flex; align-items: center; justify-content: center; text-decoration: none; margin-bottom: 10px;">📦 Buscar Equipamento Perdido</a>
+            <a href="admin.html" class="btn-acao" style="background-color: #f57c00; display: flex; align-items: center; justify-content: center; text-decoration: none;">⚙️ Gestão de Materiais (Admin)</a>
         </div>
-        <div style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
-            <a href="relatorio.html" class="btn-acao" style="background-color: #2e7d32; display: flex; align-items: center; justify-content: center; text-decoration: none;">📄 Emitir Relatório Diário Agora</a>
-            <a href="buscar.html" class="btn-acao" style="background-color: #1976d2; display: flex; align-items: center; justify-content: center; text-decoration: none; margin-top: 10px;">📦 Buscar Equipamento</a>
-            <a href="admin.html" class="btn-acao" style="background-color: #f57c00; display: flex; align-items: center; justify-content: center; text-decoration: none; margin-top: 10px;">⚙️ Gestão de Materiais (Admin)</a>
-            
-            <a href="https://app-13bbm.vercel.app/" class="btn-voltar-login" style="display: block; text-align: center; margin-top: 20px;">⬅ Voltar ao Painel Principal</a>
+
+        <div class="hist-box">
+            <h4 style="margin: 0 0 10px 0; color: #555;">Últimas Atualizações no Sistema:</h4>
+            <div id="area-historico">⏳ A carregar...</div>
         </div>
     </main>
 
     <script>
-        // Trava de segurança da Conferência
         if(!localStorage.getItem('conf_usuarioNome')) window.location.href = 'index.html';
+        document.getElementById('user-logado-nome').innerText = localStorage.getItem('conf_usuarioNome');
 
-        window.onload = function() {
-            document.getElementById('user-logado-nome').innerText = localStorage.getItem('conf_usuarioNome');
-            document.getElementById('user-logado-mat').innerText = localStorage.getItem('conf_usuarioMat');
-            carregarViaturas();
-        }
-
-        function sair() { localStorage.clear(); window.location.href = 'index.html'; }
-
-        async function carregarViaturas() {
-            const divLista = document.getElementById('lista-viaturas');
-            
+        window.onload = async function() {
             try {
-                // Chama o arquivo Python que acabamos de criar
                 const res = await fetch('/api/viaturas');
                 const dados = await res.json();
 
                 if (dados.sucesso) {
-                    divLista.innerHTML = ''; // Limpa a mensagem de "Carregando..."
-                    
+                    const divLista = document.getElementById('lista-viaturas');
+                    divLista.innerHTML = ''; 
                     dados.viaturas.forEach(v => {
-                        const btn = document.createElement('a');
-                        // Vai enviar o ID da viatura pela URL para a próxima página
-                        btn.href = `conferencia.html?vtr=${v.id_viatura}`;
-                        btn.className = 'viatura-btn';
-                        btn.innerHTML = `<span>🚒 ${v.nome_viatura}</span> <span class="tipo">Fazer Checklist ➡</span>`;
-                        divLista.appendChild(btn);
+                        divLista.innerHTML += `<a href="conferencia.html?vtr=${v.id_viatura}" class="viatura-btn"><span>🚒 ${v.nome_viatura}</span> <span class="tipo">Checklist ➡</span></a>`;
                     });
-                } else {
-                    divLista.innerHTML = `<p style="color: red;">Erro: ${dados.mensagem}</p>`;
+
+                    const histArea = document.getElementById('area-historico');
+                    histArea.innerHTML = '';
+                    dados.historico.forEach(h => {
+                        histArea.innerHTML += `<div class="hist-item"><b>${h.data}</b> - Conferência gravada por <b>${h.militar}</b></div>`;
+                    });
                 }
-            } catch (e) {
-                divLista.innerHTML = `<p style="color: red;">Erro ao carregar viaturas do servidor.</p>`;
-            }
+            } catch (e) { document.getElementById('lista-viaturas').innerHTML = `<p style="color: red;">Erro ao carregar do servidor.</p>`; }
         }
+        function sair() { localStorage.clear(); window.location.href = 'index.html'; }
     </script>
 </body>
 </html>
