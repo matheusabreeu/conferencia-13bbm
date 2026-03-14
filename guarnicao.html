@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guarnição - 13º BBM</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .container { max-width: 500px; }
+        .cartao-militar { background: #fff; padding: 10px; border-radius: 6px; border-left: 5px solid #b71c1c; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .cartao-militar strong { color: #d32f2f; font-size: 0.8rem; display: block; }
+        .btn-excluir { background: #ffebee; color: #d32f2f; border: 1px solid #ffcdd2; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        select, input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ccc; margin-bottom: 12px; box-sizing: border-box; }
+        .vtr-box { background: #e3f2fd; padding: 15px; border-radius: 8px; border: 1px solid #bbdefb; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h2 style="color: #b71c1c; text-align: center;">👨‍🚒 Prontidão do Dia</h2>
+        
+        <div class="vtr-box">
+            <h3 style="margin-top: 0; color: #1976d2; font-size: 1.1rem;">Status das Viaturas</h3>
+            <label><strong>ABT-34:</strong></label>
+            <select id="status-abt">
+                <option value="Operante">Operante</option>
+                <option value="Com Restrição">Com Restrição</option>
+                <option value="Inoperante">Inoperante</option>
+            </select>
+            <input type="text" id="obs-abt" placeholder="Se restrito/inoperante, informe o motivo..." style="display: none;">
+
+            <label><strong>AR-75:</strong></label>
+            <select id="status-ar">
+                <option value="Operante">Operante</option>
+                <option value="Com Restrição">Com Restrição</option>
+                <option value="Inoperante">Inoperante</option>
+            </select>
+            <input type="text" id="obs-ar" placeholder="Se restrito/inoperante, informe o motivo..." style="display: none;">
+        </div>
+
+        <h3 style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">Escala da Guarnição</h3>
+        <div id="cards-guarnicao"></div>
+
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-top: 15px;">
+            <select id="funcao-sel">
+                <option value="CHEFE DE SOCORRO">Chefe de Socorro</option>
+                <option value="CMT DA GUARNIÇÃO">Cmt da Guarnição</option>
+                <option value="CONDUTOR ABT">Condutor ABT</option>
+                <option value="CONDUTOR AR">Condutor AR</option>
+                <option value="AUXILIAR DE LINHA">Auxiliar de Linha</option>
+            </select>
+            <select id="militar-sel"><option value="">-- Selecione o Militar --</option></select>
+            <button class="btn-acao" onclick="adicionarMilitar()">➕ Adicionar à Escala</button>
+        </div>
+
+        <button class="btn-acao" onclick="salvarTudo()" style="background-color: #2e7d32; margin-top: 20px;">✅ Salvar Prontidão e Voltar</button>
+    </main>
+
+    <script>
+        let guarnicao = JSON.parse(localStorage.getItem('guarnicaoServico') || '[]');
+        
+        window.onload = function() {
+            const listaBD = JSON.parse(localStorage.getItem('conf_listaMilitares') || '[]');
+            const selectMilitar = document.getElementById('militar-sel');
+            listaBD.forEach(m => selectMilitar.innerHTML += `<option value="${m.nome_guerra}">${m.nome_guerra}</option>`);
+            atualizarTela();
+
+            // Mostra o campo de observação se a viatura estiver restrita
+            document.getElementById('status-abt').addEventListener('change', function() {
+                document.getElementById('obs-abt').style.display = this.value !== 'Operante' ? 'block' : 'none';
+            });
+            document.getElementById('status-ar').addEventListener('change', function() {
+                document.getElementById('obs-ar').style.display = this.value !== 'Operante' ? 'block' : 'none';
+            });
+        }
+
+        function adicionarMilitar() {
+            const f = document.getElementById('funcao-sel').value;
+            const m = document.getElementById('militar-sel').value;
+            if(!m) return alert("Selecione o militar!");
+            guarnicao.push({ funcao: f, nome: m });
+            atualizarTela();
+        }
+
+        function removerMilitar(idx) { guarnicao.splice(idx, 1); atualizarTela(); }
+
+        function atualizarTela() {
+            const cont = document.getElementById('cards-guarnicao');
+            cont.innerHTML = guarnicao.map((g, i) => `
+                <div class="cartao-militar">
+                    <div><strong>${g.funcao}</strong><span>${g.nome}</span></div>
+                    <button class="btn-excluir" onclick="removerMilitar(${i})">❌</button>
+                </div>`).join('');
+        }
+
+        function salvarTudo() {
+            localStorage.setItem('guarnicaoServico', JSON.stringify(guarnicao));
+            
+            const vtrs = {
+                ABT_34: { status: document.getElementById('status-abt').value, obs: document.getElementById('obs-abt').value },
+                AR_75: { status: document.getElementById('status-ar').value, obs: document.getElementById('obs-ar').value }
+            };
+            localStorage.setItem('statusViaturas', JSON.stringify(vtrs));
+            
+            alert("Prontidão salva no telemóvel!");
+            window.location.href = 'viaturas.html';
+        }
+    </script>
+</body>
+</html>
