@@ -69,11 +69,16 @@ class handler(BaseHTTPRequestHandler):
                 ultimos_hoje[str(r.get('id_material', '')).strip()] = r
 
             vtrs_conferidas = set(str(r.get('id_viatura')) for r in registros_hoje)
-            locais_obrigatorios = ['ABT-34', 'AR-75', 'Permanência']
+            # LER VIATURAS DE FORMA DINÂMICA
+            viaturas_bd = ler_aba_segura(planilha, 'Viaturas')
+            locais_obrigatorios = [str(v['id_viatura']).strip() for v in viaturas_bd if str(v.get('nome_viatura', '')).strip().lower() != 'almoxarifado' and 'id_viatura' in v]
+
+            vtrs_conferidas = set(str(r.get('id_viatura')) for r in registros_hoje)
+            
+            # Verifica quais locais obrigatórios ainda não foram conferidos
             viaturas_pendentes = [loc for loc in locais_obrigatorios if loc not in vtrs_conferidas and loc.replace('ê','e') not in vtrs_conferidas]
 
             aviso_pendencia = f"Atenção: Você ainda não conferiu estes locais: {', '.join(viaturas_pendentes)}" if viaturas_pendentes else None
-
             agrupamento_vtrs = {}
             alteracoes = []
 
