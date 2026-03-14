@@ -20,15 +20,17 @@
     </div>
 
     <main class="container">
-        <h2 style="color: #d32f2f; text-align: center; margin-bottom: 20px;">Painel de Conferência</h2>
+        <h2 style="color: #d32f2f; text-align: center; margin-bottom: 5px;">Painel de Conferência</h2>
+        <p style="text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 20px;">Passo 2: Entre em todos os locais e faça a conferência.</p>
 
         <div id="lista-viaturas" style="text-align: center;">⏳ Carregando locais...</div>
         
         <div style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 20px;">
-            <a href="guarnicao.html" class="btn-acao" style="background-color: #b71c1c; display: flex; align-items: center; justify-content: center; text-decoration: none; margin-bottom: 10px;">👨‍🚒 1. Informar Guarnição e Viaturas</a>
-            <a href="relatorio.html" class="btn-acao" style="background-color: #2e7d32; display: flex; align-items: center; justify-content: center; text-decoration: none; margin-bottom: 10px;">📄 2. Emitir Relatório Diário Oficial</a>
-            <a href="buscar.html" class="btn-acao" style="background-color: #1976d2; display: flex; align-items: center; justify-content: center; text-decoration: none; margin-bottom: 10px;">📦 Buscar Equipamento Perdido</a>
-            <a href="admin.html" class="btn-acao" style="background-color: #f57c00; display: flex; align-items: center; justify-content: center; text-decoration: none;">⚙️ Gestão de Materiais (Admin)</a>
+            <a href="buscar.html" class="btn-acao" style="background-color: #f57c00; display: flex; align-items: center; justify-content: center; text-decoration: none; margin-bottom: 10px;">📦 Buscar Equipamento Perdido</a>
+            <a href="admin.html" class="btn-acao" style="background-color: #555; display: flex; align-items: center; justify-content: center; text-decoration: none; margin-bottom: 25px;">⚙️ Gestão de Materiais (Admin)</a>
+            
+            <h3 style="text-align: center; color: #2e7d32; border-top: 1px dashed #ccc; padding-top: 15px;">Finalizar Serviço</h3>
+            <a href="relatorio.html" class="btn-acao" style="background-color: #2e7d32; display: flex; align-items: center; justify-content: center; text-decoration: none; padding: 18px;">📄 3. Emitir Relatório Diário Oficial</a>
         </div>
 
         <div class="hist-box">
@@ -55,9 +57,13 @@
 
                     const histArea = document.getElementById('area-historico');
                     histArea.innerHTML = '';
-                    dados.historico.forEach(h => {
-                        histArea.innerHTML += `<div class="hist-item"><b>${h.data}</b> - Conferência gravada por <b>${h.militar}</b></div>`;
-                    });
+                    if(dados.historico && dados.historico.length > 0) {
+                        dados.historico.forEach(h => {
+                            histArea.innerHTML += `<div class="hist-item"><b>${h.data}</b> - Gravado por <b>${h.militar}</b></div>`;
+                        });
+                    } else {
+                        histArea.innerHTML = `<p style="color:#888; font-size: 0.85rem;">Nenhum registro encontrado hoje.</p>`;
+                    }
                 }
             } catch (e) { document.getElementById('lista-viaturas').innerHTML = `<p style="color: red;">Erro ao carregar do servidor.</p>`; }
         }
