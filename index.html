@@ -60,7 +60,8 @@
                     localStorage.setItem('conf_usuarioNivel', dados.nivel_acesso);
                     localStorage.setItem('conf_listaMilitares', JSON.stringify(dados.militares));
                     
-                    window.location.href = 'viaturas.html';
+                   // Vai obrigar o militar a preencher a guarnição primeiro!
+                    window.location.href = 'guarnicao.html';
                 } else { 
                     erro.innerText = dados.mensagem; 
                     erro.style.color = "#d32f2f";
